@@ -1,7 +1,7 @@
 ﻿#Readme
 
 This is a Free Code Camp advanced front end development project "[Build a Tic Tac Toe Game
-](https://www.freecodecamp.com/map)". View the project on [codepen](http://codepen.io/Reggie01/full/YWyoKB/).
+](https://www.freecodecamp.com/challenges/build-a-tic-tac-toe-game)". View the project on [codepen](http://codepen.io/Reggie01/full/YWyoKB/).
 
 
 ### User Stories
