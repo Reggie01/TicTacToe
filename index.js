@@ -1,14 +1,154 @@
 ﻿/* Current a Work in Progress */
 
-var currentScene;
-var checkBoxForX;
-var checkBoxForO;
-var player;
-var computer;
-var game = { isOver: false };
+var currentScene,
+      checkBoxForX,
+      checkBoxForO,
+      player,
+      computer,
+      gameState;
 
+/* 
+  * GameState Object
+     keys: 
+       isOver - boolean
+       checkGameState - function
+           parameters - array with gameboardState
+           
+*/  
+
+gameState = {
+    gameBoardState: [],
+    checkHorizontally: function() {
+        var countX = 0,
+              countO = 0,
+                    row = 0,
+              column = 0;
+        
+        for ( row; row < 3; row++ ){
+            for ( column; column < 3; column++ ){
+                if( this.gameBoardState[row][column] === "x"  ) {
+                    countX += 1;
+                }
+            
+                if( this.gameBoardState[row][column] === "o" ) {
+                    countO += 1;
+                }           
+            }
+            
+            if ( countX === 3 || countO === 3 ){
+                 return true;
+            }
+            countX = 0;
+            countO = 0;
+        }
+        
+        return false;
+        
+    },
+    checkDiagonally: function() {
+         var countO = 0,
+               countX = 0;
+                         
+         if( this.gameBoardState[0][0] === "x"  &&
+             this.gameBoardState[1][1] === "x"  &&
+             this.gameBoardState[2][2] === "x"
+            ) {
+             countX = 3;
+            }
+                   
+         if( this.gameBoardState[0][0] === "o"  &&
+             this.gameBoardState[1][1] === "o"  &&
+             this.gameBoardState[2][2] === "o"
+           ) {
+             countO = 3;
+           }
+                   
+         if ( countX === 3 || countO === 3 ){
+             return true;
+         } else {
+             countX = 0;
+             countO = 0;
+         }
+                                    
+         if( this.gameBoardState[2][0] === "x"  &&
+             this.gameBoardState[1][1] === "x"  &&
+             this.gameBoardState[0][2] === "x"
+         ) {
+             countX = 3;
+         }
+                   
+         if( this.gameBoardState[2][0] === "o"  &&
+             this.gameBoardState[1][1] === "o"  &&
+             this.gameBoardState[0][2] === "o"
+         ) {
+             countO = 3;
+         }
+         
+         if ( countX === 3 || countO === 3 ){
+             return true;
+         } 
+                                         
+        return false;
+    },
+    checkVertically: function() {
+        var countX = 0,
+              countO = 0,
+                    row = 0,
+              column = 0;
+        
+        for ( column; column < 3; column++ ){
+            for ( row; row < 3; row++ ){
+                if( this.gameBoardState[row][column] === "x"  ) {
+                    countX += 1;
+                }
+            
+                if( this.gameBoardState[row][column] === "o" ) {
+                    countO += 1;
+                }           
+            }
+            if ( countX === 3 || countO === 3 ){
+                 return true;
+            }
+            countX = 0;
+            countO = 0;
+        }
+        
+        return false;
+    },
+    isGameOver: function() {
+        var count = 0;
+        
+        if( checkHorizontally() ){
+             return true;
+        } else if ( checkVertically() ) {
+             return true;
+        } else {
+            return checkDiagonally();
+        }
+    },
+    initializeGameState: function() {
+         var           row = 0,
+                    column = 0,
+             boardState = [];          
+         
+         for( row; row < 3; row++ ){
+             boardState.push([]);
+             for ( column; column < 3; column++ ){
+                    boardState[row][column] = 0;
+             }
+             column = 0;
+         }
+         
+         this.gameBoardState = boardState;
+    }
+}
+      
 /*
-    First Screen
+    Draw First Screen
+    parameters
+      context - canvas context
+      width - canvas width
+      height - canvas height
 */
 
 function drawFirstScreen( context, width, height ){
@@ -25,7 +165,6 @@ function drawFirstScreen( context, width, height ){
     context.fillText( "Player play as O.", ( width/2 ) - text2.width, height * 2/3 );
     context.strokeRect( ( width/2 ) + text2.width/ .8, ( height * 2/3 ) - 30, 30, 30 );
     context.closePath();
-    // context.stroke();
     
     checkBoxForX = { x: ( width / 2 ) + text.width/ 0.8, 
                                    x2: (( width / 2 ) + text.width/ 0.8) + 30,
@@ -54,9 +193,11 @@ window.onload = function(){
     console.log("Your browser does not support canvas." );
   }
 
-  function draw() {
+  function setUpGameBoard() {
     context.clearRect( 0, 0, width, height );
     drawBoard( context );
+    gameState.initializeGameState();
+    console.log( gameState.gameBoardState );
   }
   
   function drawBoard( context ) {
@@ -189,7 +330,7 @@ window.onload = function(){
   }
   
   function handleSceneTwo( x, y ) {
-       if( !game.isOver ){
+       if( !gameState.isOver ){
             if( player.turn ){
                 drawSymbol( player.icon, x, y );
             } else{
@@ -249,18 +390,19 @@ window.onload = function(){
   
   function clickHandler( e ){
        
-       var canvasLeft = canvas.getBoundingClientRect().left;
-       var canvasTop = canvas.getBoundingClientRect().top;
-       var x = e.clientX - canvasLeft;
-       var y = e.clientY - canvasTop;
+       var canvasLeft = canvas.getBoundingClientRect().left,
+             canvasTop = canvas.getBoundingClientRect().top,
+                              x = e.clientX - canvasLeft,
+                              y = e.clientY - canvasTop,
+                         currentPlayerTurn;
        
        if( currentScene === 1 ){
            handleSceneOne( x, y );
            if( player ){
               currentScene = 2;
-              setTimeout( draw, 1000 );              
+              setTimeout( setUpGameBoard, 1000 );              
            }
-           var first = whoGoesFirst();
+           currentPlayerTurn = whoGoesFirst();
        } else if( currentScene === 2 ){
            handleSceneTwo( x, y );
        }
@@ -275,7 +417,18 @@ window.onload = function(){
   
   drawFirstScreen( context, width, height );
   
+  var game2 = Object.create( gameState );
+  console.log( game2 );
+  game2.initializeGameState();
+  game2.gameBoardState[0][0] = "x";
+  game2.gameBoardState[1][0] = "x";
+  game2.gameBoardState[2][0] = "x";
+  console.log( game2.gameBoardState );
+  console.log("Check Horizontal: " +  game2.checkHorizontally() );
+  console.log("Check Diagonally: " +  game2.checkDiagonally() );
+  console.log("Check Vertically: " +  game2.checkVertically() );
 }
+
 
 
 
