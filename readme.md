@@ -13,6 +13,8 @@ This is a Free Code Camp advanced front end development project "[Build a Tic Ta
 
 ### APIs / Libraries / Articles
 * https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API
+* http://neverstopbuilding.com/minimax - minimax algorithm
+* http://stackoverflow.com/questions/307179/what-is-javascripts-highest-integer-value-that-a-number-can-go-to-without-losin
 
 ### Technologies Used
 * javascript
