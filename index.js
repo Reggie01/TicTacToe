@@ -35,14 +35,19 @@ gameState = {
                 }           
             }
             
-            if ( countX === 3 || countO === 3 ){
-                 return true;
+            if ( countX === 3 ){
+                 return player.icon === "x" ? 10 : -10;
             }
+            
+            if( countO === 3 ) {
+                return player.icon === "o" ? 10 : -10;
+            }
+            
             countX = 0;
             countO = 0;
         }
         
-        return false;
+        return -10;
         
     },
     checkDiagonally: function() {
@@ -63,8 +68,10 @@ gameState = {
              countO = 3;
            }
                    
-         if ( countX === 3 || countO === 3 ){
-             return true;
+         if ( countX === 3 ){
+            return player.icon === "o" ? 10 : -10;
+         } else if ( countO === 3 ){
+             return player.icon === "o" ? 10 : -10;
          } else {
              countX = 0;
              countO = 0;
@@ -84,11 +91,13 @@ gameState = {
              countO = 3;
          }
          
-         if ( countX === 3 || countO === 3 ){
-             return true;
+         if ( countX === 3 ){
+            return player.icon === "o" ? 10 : -10;
+         } else if ( countO === 3 ){
+             return player.icon === "o" ? 10 : -10;
          } 
                                          
-        return false;
+        return 0;
     },
     checkVertically: function() {
         var countX = 0,
@@ -106,25 +115,30 @@ gameState = {
                     countO += 1;
                 }           
             }
-            if ( countX === 3 || countO === 3 ){
-                 return true;
+            if ( countX === 3 ){
+                 return player.icon === "x" ? 10 : -10;
+            }
+            
+            if ( countO === 3 ) {
+                 return player.icon === "o" ? 10 : -10;
             }
             countX = 0;
-            countO = 0;
+            countO = 0;            
         }
         
-        return false;
+        return -10;
     },
     isGameOver: function() {
         var count = 0;
-        
-        if( checkHorizontally() ){
+              
+        if( gameState.checkHorizontally() ){
              return true;
-        } else if ( checkVertically() ) {
+        } else if ( gameState.checkVertically() ) {
              return true;
         } else {
-            return checkDiagonally();
+            return gameState.checkDiagonally();
         }
+        
     },
     initializeGameState: function() {
          var           row = 0,
@@ -176,7 +190,8 @@ function drawFirstScreen( context, width, height ){
                                    x2: (( width / 2 ) + text2.width/ 0.8 ) + 30,
                                    y: ( ( height * 2/3 ) - 30 ),
                                    y2: ( ( height * 2/3 ) - 30 ) + 30
-                                   };                                   
+                                   };   
+                                
 }
 
 /*
@@ -195,12 +210,12 @@ window.onload = function(){
 
   function setUpGameBoard() {
     context.clearRect( 0, 0, width, height );
-    drawBoard( context );
+    drawBoard();
     gameState.initializeGameState();
-    console.log( gameState.gameBoardState );
+    
   }
   
-  function drawBoard( context ) {
+  function drawBoard() {
      
      context.beginPath();
      context.moveTo( width/3, 0 );
@@ -217,6 +232,8 @@ window.onload = function(){
      
      context.stroke();
      
+    var msg = new SpeechSynthesisUtterance( "Setting up game board. \n\n Good luck!" );
+    window.speechSynthesis.speak(msg);    
   }
   
   function Circle( x, y, radius ) {
@@ -267,7 +284,7 @@ window.onload = function(){
        context.lineWidth = this.lineWidth;
        var x;
        var y;
-       console.log( this.x );
+      
        if( this.x < 100 ){
           x = 0;
        } else if( this.x < 200 ){
@@ -298,22 +315,28 @@ window.onload = function(){
   }
   
   function handleSceneOne( x, y ) {
-     console.log( "x: " + x + " y: " + y );
+     // console.log( "x: " + x + " y: " + y );
      
      if( x > checkBoxForX.x && x < checkBoxForX.x2 && y > checkBoxForX.y && y < checkBoxForX.y2 ){
-         console.log( "This is X: " + x + ". " + "This is Y: " + y );
+         // console.log( "This is X: " + x + ". " + "This is Y: " + y );
          var width = checkBoxForX.x2 - checkBoxForX.x;
          var height = checkBoxForX.y2 - checkBoxForX.y;
          context.fillRect( checkBoxForX.x, checkBoxForX.y, width, height );
          player = { icon: "x" };
          computer = { icon: "o" };
+         var msg = new SpeechSynthesisUtterance( "You chose x. \n Guess I'm o." );
+         window.speechSynthesis.speak(msg);        
      } else if( x > checkBoxForO.x && x < checkBoxForO.x2 && y > checkBoxForO.y && y < checkBoxForO.y2 ) {
          var width = checkBoxForO.x2 - checkBoxForO.x;
          var height = checkBoxForO.y2 - checkBoxForO.y;
          context.fillRect( checkBoxForO.x, checkBoxForO.y, width, height );
          player = { icon: "o" };
          computer = { icon: "x" };
+         var msg = new SpeechSynthesisUtterance( "You chose o. \n Guess I'm o." );
+         window.speechSynthesis.speak(msg);
      }
+     
+     return player;
      
   }
   
@@ -330,14 +353,60 @@ window.onload = function(){
   }
   
   function handleSceneTwo( x, y ) {
-       if( !gameState.isOver ){
+       // console.log( "Player turn: " + player.turn );
+       // console.log( "Computer turn: " + computer.turn );
+       if( !gameState.isGameOver() ){
             if( player.turn ){
+                
                 drawSymbol( player.icon, x, y );
-            } else{
+            } else{               
                 drawSymbol( computer.icon, x, y );
             }
-       }
+       } else {
+            drawGameOver();
+       }      
+  }
+  
+  function handleSceneThree() {
+      console.log( "Play again? " );
+  }
+  
+  function drawGameOver() {
+      var playAgainText = "Play again??",
+            textDimensions,
+            text;
+            
+      if( player.won ) {
+          text = "Player won!!";
+          textDimensions = context.measureText( text );
+      } else if( computer.won ){
+          text = "Computer won. :(";
+          textDimensions = context.measureText( text );
+      }
+      
+      context.beginPath();
+      context.clearRect( 0, 0, width, height );
+      context.fillText( text, 25, height / 4 );
+      context.fillText( playAgainText, 25, height * ( 3 / 4 ) );
+      context.closePath();
+      
+      currentScene = 3;
+  }
+  
+  function drawPlayerDecision( player ) {
+       var text = "Player icon: " + player.icon;
+       var textDimensions = context.measureText( "Player play as X." );
+      
+       context.clearRect( 0, 0, width, height );
+       context.beginPath();
+       context.fillText( text, ( width/2 ) - textDimensions.width / 2, height/2 );
+       context.closePath(); 
        
+       player.info = true;       
+  }
+  
+  function drawPlayerChoice( player ) {
+       setTimeout( function() { drawPlayerDecision( player ); }.bind( this ), 500 );
   }
   
   function drawSymbol( playerSymbol, x, y ){
@@ -346,45 +415,46 @@ window.onload = function(){
        } else if( playerSymbol === "o" ){
             var img = new Circle( x, y );
        }
-       console.log(player);
-       console.log(computer);
-       console.log(img);
+       // console.log(player);
+       // console.log(computer);
+       // console.log(img);
+       
        if( x <= 100 && y <= 100 ){
-          console.log( "upper left" );
-                   
+          // console.log( "upper left" );                  
           img.draw();
+          gameState.gameBoardState[0][0] = playerSymbol;
        } else if( x <= 200 && y <= 100) {
-          console.log( "upper mid" );
-          
+          // console.log( "upper mid" );         
           img.draw();
+          gameState.gameBoardState[0][1] = playerSymbol;
        } else if( x <= 300 && y <= 100 ){
-          console.log( "upper right" );
-          
+          // console.log( "upper right" );         
           img.draw();
+          gameState.gameBoardState[0][2] = playerSymbol;
        } else if( x <= 100 && y <= 200 ){
-          console.log( "mid left" );
-          
+          // console.log( "mid left" );          
           img.draw();
+          gameState.gameBoardState[1][0] = playerSymbol;
        } else if( x <= 200 && y <= 200 ){
-          console.log( "mid mid" );
-          
+          // console.log( "mid mid" );          
           img.draw();
+          gameState.gameBoardState[1][1] = playerSymbol;
        } else if( x <= 300 && y <= 200 ){
-          console.log( "mid-right" );
-          
+          // console.log( "mid-right" );         
           img.draw();
+          gameState.gameBoardState[1][2] = playerSymbol;
        } else if( x <=100 && y <= 300 ){
-          console.log( "bottom-left" );
-          
+          // console.log( "bottom-left" );         
           img.draw();
+          gameState.gameBoardState[2][0] = playerSymbol;
        } else if( x < 200 && y <= 300 ) {
-          console.log( "bottom-mid" );
-          
+          // console.log( "bottom-mid" );         
           img.draw();
+          gameState.gameBoardState[2][1] = playerSymbol;
        } else if( x < 300 && y <= 300 ){
-          console.log( "bottom-right" );
-          
+          // console.log( "bottom-right" );          
           img.draw();
+          gameState.gameBoardState[2][2] = playerSymbol;
        }
   }
   
@@ -397,14 +467,17 @@ window.onload = function(){
                          currentPlayerTurn;
        
        if( currentScene === 1 ){
-           handleSceneOne( x, y );
+           var playerChoice = handleSceneOne( x, y );
+           drawPlayerChoice( playerChoice );
            if( player ){
               currentScene = 2;
-              setTimeout( setUpGameBoard, 1000 );              
+              setTimeout( setUpGameBoard, 3000 );              
            }
            currentPlayerTurn = whoGoesFirst();
        } else if( currentScene === 2 ){
            handleSceneTwo( x, y );
+       } else if( currentScene === 3 ){
+           handleSceneThree();
        }
        
   }
@@ -418,12 +491,18 @@ window.onload = function(){
   drawFirstScreen( context, width, height );
   
   var game2 = Object.create( gameState );
-  console.log( game2 );
+  // console.log( game2 );
   game2.initializeGameState();
   game2.gameBoardState[0][0] = "x";
   game2.gameBoardState[1][0] = "x";
   game2.gameBoardState[2][0] = "x";
-  console.log( game2.gameBoardState );
+  // console.log( game2 );
+  // console.log( game2.gameBoardState );
+  
+  var game3 = Object.create( gameState );
+  game3.initializeGameState();
+  // console.log( game3 );
+  
   console.log("Check Horizontal: " +  game2.checkHorizontally() );
   console.log("Check Diagonally: " +  game2.checkDiagonally() );
   console.log("Check Vertically: " +  game2.checkVertically() );

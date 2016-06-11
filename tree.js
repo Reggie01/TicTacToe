@@ -115,7 +115,7 @@ gameTree._root.children[1].children[1].children[0].children.push( new Node( -5 )
 gameTree._root.children[1].children[1].children[0].children[1].parent = gameTree._root.children[1].children[1].children[0];
 
 
-console.log( gameTree );
+// console.log( gameTree );
 
 function minimax( node, depth, maximizingPlayer ) {
     if (depth === 0 || node.data ){
@@ -141,11 +141,9 @@ function minimax( node, depth, maximizingPlayer ) {
     }
 }
 
-console.log( "hello" );
-
 if ('speechSynthesis' in window) {
  // Synthesis support. Make your web apps talk!
- var msg = new SpeechSynthesisUtterance('Hello World');
+ var msg = new SpeechSynthesisUtterance( "Let's play tic tac toe" );
  window.speechSynthesis.speak(msg);
  
  speechSynthesis.getVoices().forEach(function(voice) {
@@ -164,7 +162,7 @@ if ('speechSynthesis' in window) {
 }
 
 
-console.log( minimax( gameTree._root, 4, true ) );
+// console.log( minimax( gameTree._root, 4, true ) );
 
 
 
