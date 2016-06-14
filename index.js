@@ -7,6 +7,21 @@ var currentScene,
       computer,
       gameState;
 
+/*
+ * Player Object
+*/
+player = { 
+    turn: false,
+    icon: "",
+    won: null
+};
+
+computer = {
+   turn: false,
+   icon: "",
+   won: null
+};
+
 /* 
   * GameState Object
      keys: 
@@ -18,127 +33,87 @@ var currentScene,
 
 gameState = {
     gameBoardState: [],
-    checkHorizontally: function() {
-        var countX = 0,
-              countO = 0,
+    player: { turn: false },
+    checkHorizontally: function( board ) {
+        var    count = 0,
                     row = 0,
-              column = 0;
+              column = 0,
+                   icon = gameState.player.turn ? player.icon: computer.icon; 
         
         for ( row; row < 3; row++ ){
             for ( column; column < 3; column++ ){
-                if( this.gameBoardState[row][column] === "x"  ) {
-                    countX += 1;
-                }
-            
-                if( this.gameBoardState[row][column] === "o" ) {
-                    countO += 1;
-                }           
+                if( board[row][column] === icon  ) {
+                    count += 1;
+                }         
             }
-            
-            if ( countX === 3 ){
-                 return player.icon === "x" ? 10 : -10;
-            }
-            
-            if( countO === 3 ) {
-                return player.icon === "o" ? 10 : -10;
-            }
-            
-            countX = 0;
-            countO = 0;
+            if ( count === 3 ) {
+                 return true;
+            } 
+            count = 0;
         }
         
-        return -10;
+        return false;
         
     },
-    checkDiagonally: function() {
-         var countO = 0,
-               countX = 0;
+    checkDiagonally: function( board ) {
+         var      row = 0,
+              column = 0,
+                   icon = gameState.player.turn ? player.icon: computer.icon; 
                          
-         if( this.gameBoardState[0][0] === "x"  &&
-             this.gameBoardState[1][1] === "x"  &&
-             this.gameBoardState[2][2] === "x"
-            ) {
-             countX = 3;
-            }
-                   
-         if( this.gameBoardState[0][0] === "o"  &&
-             this.gameBoardState[1][1] === "o"  &&
-             this.gameBoardState[2][2] === "o"
-           ) {
-             countO = 3;
-           }
-                   
-         if ( countX === 3 ){
-            return player.icon === "o" ? 10 : -10;
-         } else if ( countO === 3 ){
-             return player.icon === "o" ? 10 : -10;
-         } else {
-             countX = 0;
-             countO = 0;
+         if( board[0][0] === icon  && board[1][1] === icon  && board[2][2] === icon ) {
+             return true;
          }
-                                    
-         if( this.gameBoardState[2][0] === "x"  &&
-             this.gameBoardState[1][1] === "x"  &&
-             this.gameBoardState[0][2] === "x"
-         ) {
-             countX = 3;
+                                             
+         if( board[2][0] === icon  && board[1][1] === icon  && board[0][2] === icon ) {
+             return true;
          }
-                   
-         if( this.gameBoardState[2][0] === "o"  &&
-             this.gameBoardState[1][1] === "o"  &&
-             this.gameBoardState[0][2] === "o"
-         ) {
-             countO = 3;
-         }
-         
-         if ( countX === 3 ){
-            return player.icon === "o" ? 10 : -10;
-         } else if ( countO === 3 ){
-             return player.icon === "o" ? 10 : -10;
-         } 
                                          
-        return 0;
+        return false;
     },
-    checkVertically: function() {
-        var countX = 0,
-              countO = 0,
+    checkVertically: function( board ) {
+        var    count = 0,
                     row = 0,
-              column = 0;
-        
+              column = 0,
+                   icon = gameState.player.turn ? player.icon: computer.icon;
+               
         for ( column; column < 3; column++ ){
             for ( row; row < 3; row++ ){
-                if( this.gameBoardState[row][column] === "x"  ) {
-                    countX += 1;
-                }
-            
-                if( this.gameBoardState[row][column] === "o" ) {
-                    countO += 1;
-                }           
+                if( board[row][column] === icon ) {
+                    count += 1;
+                }         
             }
-            if ( countX === 3 ){
-                 return player.icon === "x" ? 10 : -10;
-            }
-            
-            if ( countO === 3 ) {
-                 return player.icon === "o" ? 10 : -10;
-            }
-            countX = 0;
-            countO = 0;            
+            if( count === 3 ) {
+                return true;
+            }          
+            count = 0;            
         }
         
-        return -10;
+        return false;
+    },   
+    isGameOver: function( board ) {
+        
+        if( gameState.checkHorizontally( board )  
+            || gameState.checkDiagonally( board ) 
+            || gameState.checkVertically( board ) 
+          ) {
+            return true;
+          }
+        
+         return false;
+        
     },
-    isGameOver: function() {
-        var count = 0;
-              
-        if( gameState.checkHorizontally() ){
-             return true;
-        } else if ( gameState.checkVertically() ) {
-             return true;
-        } else {
-            return gameState.checkDiagonally();
-        }
-        
+    getScore: function( gameOver, game ) {
+         
+         if( gameOver ){
+            if( game.player.turn ) {
+                 return 10;
+            } else {
+                 return -10;
+            }
+         } else {
+             return 0;
+         }
+          
     },
     initializeGameState: function() {
          var           row = 0,
@@ -148,13 +123,14 @@ gameState = {
          for( row; row < 3; row++ ){
              boardState.push([]);
              for ( column; column < 3; column++ ){
-                    boardState[row][column] = 0;
+                    boardState[row][column] = null;
              }
              column = 0;
          }
          
          this.gameBoardState = boardState;
-    }
+    }, 
+    
 }
       
 /*
@@ -314,56 +290,57 @@ window.onload = function(){
          
   }
   
+  function assignXandO( bool ) {
+      if( bool ){
+           player.icon = "x";
+           computer.icon = "o";
+      } else {
+           player.icon = "o";
+           computer.icon = "x";
+      }
+  }
+  
   function handleSceneOne( x, y ) {
-     // console.log( "x: " + x + " y: " + y );
+     var isPlayerX = false;
      
      if( x > checkBoxForX.x && x < checkBoxForX.x2 && y > checkBoxForX.y && y < checkBoxForX.y2 ){
-         // console.log( "This is X: " + x + ". " + "This is Y: " + y );
          var width = checkBoxForX.x2 - checkBoxForX.x;
          var height = checkBoxForX.y2 - checkBoxForX.y;
          context.fillRect( checkBoxForX.x, checkBoxForX.y, width, height );
-         player = { icon: "x" };
-         computer = { icon: "o" };
+         
+         isPlayerX = true;
          var msg = new SpeechSynthesisUtterance( "You chose x. \n Guess I'm o." );
          window.speechSynthesis.speak(msg);        
      } else if( x > checkBoxForO.x && x < checkBoxForO.x2 && y > checkBoxForO.y && y < checkBoxForO.y2 ) {
          var width = checkBoxForO.x2 - checkBoxForO.x;
          var height = checkBoxForO.y2 - checkBoxForO.y;
          context.fillRect( checkBoxForO.x, checkBoxForO.y, width, height );
-         player = { icon: "o" };
-         computer = { icon: "x" };
-         var msg = new SpeechSynthesisUtterance( "You chose o. \n Guess I'm o." );
+         
+         var msg = new SpeechSynthesisUtterance( "You chose o. \n Guess I'm x." );
          window.speechSynthesis.speak(msg);
      }
      
-     return player;
+     return isPlayerX;
      
   }
   
   function whoGoesFirst() {
-       if(Math.random() > .5) {
-          player.turn = "true";
-          computer.turn = "false";
-          return "player";
-       } else {
-          player.turn = "false";
-          computer.turn = "true";
-          return "computer";
-       }
+       return Math.random() > .5 ? true: false;
   }
   
   function handleSceneTwo( x, y ) {
-       // console.log( "Player turn: " + player.turn );
-       // console.log( "Computer turn: " + computer.turn );
-       if( !gameState.isGameOver() ){
-            if( player.turn ){
-                
+       
+       if( !gameState.isGameOver( gameState.gameBoardState ) ){
+            if( gameState.player.turn ){                
                 drawSymbol( player.icon, x, y );
-            } else{               
-                drawSymbol( computer.icon, x, y );
+                updateGameBoard( player.icon, x, y );
+                gameState.player.turn = !gameState.player.turn;             
+            } else {
+               console.log( "Computer turn : " + computer.turn );
             }
        } else {
             drawGameOver();
+            currentScene = 3;
        }      
   }
   
@@ -379,7 +356,7 @@ window.onload = function(){
       if( player.won ) {
           text = "Player won!!";
           textDimensions = context.measureText( text );
-      } else if( computer.won ){
+      } else if( computer.won ) {
           text = "Computer won. :(";
           textDimensions = context.measureText( text );
       }
@@ -390,10 +367,9 @@ window.onload = function(){
       context.fillText( playAgainText, 25, height * ( 3 / 4 ) );
       context.closePath();
       
-      currentScene = 3;
   }
   
-  function drawPlayerDecision( player ) {
+  function drawPlayerDecision() {
        var text = "Player icon: " + player.icon;
        var textDimensions = context.measureText( "Player play as X." );
       
@@ -406,7 +382,31 @@ window.onload = function(){
   }
   
   function drawPlayerChoice( player ) {
-       setTimeout( function() { drawPlayerDecision( player ); }.bind( this ), 500 );
+       setTimeout( function() { drawPlayerDecision(); }.bind( this ), 500 );
+  }
+  
+  function updateGameBoard( icon, x, y ) {
+      
+       if( x <= 100 && y <= 100 ){
+          gameState.gameBoardState[0][0] = icon;
+       } else if( x <= 200 && y <= 100) {
+          gameState.gameBoardState[0][1] = icon;
+       } else if( x <= 300 && y <= 100 ){
+          gameState.gameBoardState[0][2] = icon;
+       } else if( x <= 100 && y <= 200 ){
+          gameState.gameBoardState[1][0] = icon;
+       } else if( x <= 200 && y <= 200 ){
+          gameState.gameBoardState[1][1] = icon;
+       } else if( x <= 300 && y <= 200 ){
+          gameState.gameBoardState[1][2] = icon;
+       } else if( x <=100 && y <= 300 ){
+          gameState.gameBoardState[2][0] = icon;
+       } else if( x < 200 && y <= 300 ) {
+          gameState.gameBoardState[2][1] = icon;
+       } else if( x < 300 && y <= 300 ){
+          gameState.gameBoardState[2][2] = icon;
+       }
+       
   }
   
   function drawSymbol( playerSymbol, x, y ){
@@ -415,48 +415,82 @@ window.onload = function(){
        } else if( playerSymbol === "o" ){
             var img = new Circle( x, y );
        }
-       // console.log(player);
-       // console.log(computer);
-       // console.log(img);
-       
-       if( x <= 100 && y <= 100 ){
-          // console.log( "upper left" );                  
-          img.draw();
-          gameState.gameBoardState[0][0] = playerSymbol;
-       } else if( x <= 200 && y <= 100) {
-          // console.log( "upper mid" );         
-          img.draw();
-          gameState.gameBoardState[0][1] = playerSymbol;
-       } else if( x <= 300 && y <= 100 ){
-          // console.log( "upper right" );         
-          img.draw();
-          gameState.gameBoardState[0][2] = playerSymbol;
-       } else if( x <= 100 && y <= 200 ){
-          // console.log( "mid left" );          
-          img.draw();
-          gameState.gameBoardState[1][0] = playerSymbol;
-       } else if( x <= 200 && y <= 200 ){
-          // console.log( "mid mid" );          
-          img.draw();
-          gameState.gameBoardState[1][1] = playerSymbol;
-       } else if( x <= 300 && y <= 200 ){
-          // console.log( "mid-right" );         
-          img.draw();
-          gameState.gameBoardState[1][2] = playerSymbol;
-       } else if( x <=100 && y <= 300 ){
-          // console.log( "bottom-left" );         
-          img.draw();
-          gameState.gameBoardState[2][0] = playerSymbol;
-       } else if( x < 200 && y <= 300 ) {
-          // console.log( "bottom-mid" );         
-          img.draw();
-          gameState.gameBoardState[2][1] = playerSymbol;
-       } else if( x < 300 && y <= 300 ){
-          // console.log( "bottom-right" );          
-          img.draw();
-          gameState.gameBoardState[2][2] = playerSymbol;
-       }
+       img.draw();      
   }
+  
+  function getPossibleMoves( game ) {
+       var possibleCoordinates = [],
+                                    column = 0,
+                                          row = 0; 
+       
+       for( row; row < 3; row++ ){
+            possibleCoordinates.push( [] );
+            for( column; column < 3; column++ ){
+                if( game[row][column] === null ) {
+                    possibleCoordinates[row].push( { 
+                        row: row, column: column
+                    })
+                }
+            }
+            column = 0;
+       }
+       
+       console.log( possibleCoordinates );
+       
+       return possibleCoordinates;
+  }
+  
+  function get_new_state( game ) {
+      var column = 0,
+                  row = 0,
+                 icon = player.turn ? player.icon : computer.icon;
+      
+      game[move.row][move.column] = icon;
+      
+      return game;
+     
+  }
+  
+  function minimax ( game ) {
+       console.log( game );
+       if( game.isGameOver( game ) ){
+            return game.getScore( game );
+       }
+       
+       var scores = [];
+       var moves = [];
+       var newBoard;
+       var nextMoves = getPossibleMoves( game.boardState );
+       nextMoves.map( function( move ) {
+           var possible_game = get_new_state( game.boardState );
+           scores.push( minimax( game.boardState ) );
+           moves.push( move );
+       });
+      console.log( nextMoves );
+      
+      if( game.player.turn ) {
+           var max_score_index = Math.max.apply( null, scores );
+           var choice = moves[max_score_index];
+           return scores[max_score_index];             
+      } else {
+           var min_score_index = Math.min.apply( null, scores );
+           var choice = moves[min_score_index];
+           return scores[min_score_index];
+      }
+  }
+  
+  var game = Object.create( gameState );
+  game.initializeGameState();
+  game.boardState[0][0] = "o";
+  game.boardState[0][2] = "x";
+  game.boardState[1][0] = "x";
+  game.boardState[2][0] = "x";
+  game.boardState[2][1] = "o";
+  game.boardState[2][2] = "o";
+  
+  game.player.turn = true;
+  
+  minimax( game );
   
   function clickHandler( e ){
        
@@ -467,14 +501,19 @@ window.onload = function(){
                          currentPlayerTurn;
        
        if( currentScene === 1 ){
-           var playerChoice = handleSceneOne( x, y );
-           drawPlayerChoice( playerChoice );
+           var isPlayerX = handleSceneOne( x, y );
+           assignXandO( isPlayerX );
+           drawPlayerChoice();
            if( player ){
               currentScene = 2;
               setTimeout( setUpGameBoard, 3000 );              
            }
-           currentPlayerTurn = whoGoesFirst();
+           var isPlayerTurn = whoGoesFirst();
+           gameState.player = isPlayerTurn;
+           
+           console.log( "Player turn: " + player.turn );
        } else if( currentScene === 2 ){
+           console.log( "Player turn: " + player.turn );
            handleSceneTwo( x, y );
        } else if( currentScene === 3 ){
            handleSceneThree();
@@ -503,9 +542,7 @@ window.onload = function(){
   game3.initializeGameState();
   // console.log( game3 );
   
-  console.log("Check Horizontal: " +  game2.checkHorizontally() );
-  console.log("Check Diagonally: " +  game2.checkDiagonally() );
-  console.log("Check Vertically: " +  game2.checkVertically() );
+
 }
 
 

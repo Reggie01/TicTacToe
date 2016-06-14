@@ -164,6 +164,29 @@ if ('speechSynthesis' in window) {
 
 // console.log( minimax( gameTree._root, 4, true ) );
 
+var board = [
+    [null, null, null],
+    [null, null, null],
+    [null, null, null]
+]
+
+function tictactoe( board ) {
+    for( var i = 0; i < 3; i++ ) {
+        for( var j = 0; j < 3; j++ ){
+         
+             if( !board[i][j] ) {
+                 board[i][j] = 1;
+                 tictactoe( board );
+                 board[i][j] = 0;
+             }
+        }
+    }
+    console.log( board );
+}
+
+// tictactoe( board );
+console.log( board );
+
 
 
 
