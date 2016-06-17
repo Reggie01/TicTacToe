@@ -185,7 +185,7 @@ function tictactoe( board ) {
 }
 
 // tictactoe( board );
-console.log( board );
+// console.log( board );
 
 
 

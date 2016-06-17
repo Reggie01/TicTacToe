@@ -13,14 +13,17 @@ var currentScene,
 player = { 
     turn: false,
     icon: "",
-    won: null
 };
 
 computer = {
    turn: false,
    icon: "",
-   won: null
 };
+
+/*
+* Gameboard object
+*/
+
 
 /* 
   * GameState Object
@@ -32,13 +35,13 @@ computer = {
 */  
 
 gameState = {
-    gameBoardState: [],
+    gameBoard: [],
     player: { turn: false },
-    checkHorizontally: function( board ) {
+    checkHorizontally: function( board, icon ) {
         var    count = 0,
                     row = 0,
               column = 0,
-                   icon = gameState.player.turn ? player.icon: computer.icon; 
+                   icon = icon;
         
         for ( row; row < 3; row++ ){
             for ( column; column < 3; column++ ){
@@ -55,10 +58,10 @@ gameState = {
         return false;
         
     },
-    checkDiagonally: function( board ) {
+    checkDiagonally: function( board, icon ) {
          var      row = 0,
               column = 0,
-                   icon = gameState.player.turn ? player.icon: computer.icon; 
+                   icon = icon; 
                          
          if( board[0][0] === icon  && board[1][1] === icon  && board[2][2] === icon ) {
              return true;
@@ -70,11 +73,11 @@ gameState = {
                                          
         return false;
     },
-    checkVertically: function( board ) {
+    checkVertically: function( board, icon ) {
         var    count = 0,
                     row = 0,
               column = 0,
-                   icon = gameState.player.turn ? player.icon: computer.icon;
+                   icon = icon;
                
         for ( column; column < 3; column++ ){
             for ( row; row < 3; row++ ){
@@ -90,30 +93,55 @@ gameState = {
         
         return false;
     },   
-    isGameOver: function( board ) {
+    draw: function( board ) {
+        var column = 0,
+                    row = 0,
+                 count = 0;
         
-        if( gameState.checkHorizontally( board )  
-            || gameState.checkDiagonally( board ) 
-            || gameState.checkVertically( board ) 
-          ) {
+        for ( row; row < board.length; row++ ) {
+             for ( column; column < board[0].length; column++ ) {
+                 if( board[row][column] !== null ) {
+                    count += 1;
+                 }
+             }
+             column = 0;
+        }
+        
+        return count === 9 ? true: false;
+    },
+    isGameOver: function( game ) {
+        
+        if( game.gameWin( game.gameBoard, player.icon ) ) {
             return true;
-          }
-        
-         return false;
+        } else if( game.gameWin( game.gameBoard, player.icon ) ) {
+            return true;
+        } else if( game.draw( game.gameBoard ) ){
+           return true;
+        } else {
+           return false;
+        }
         
     },
-    getScore: function( gameOver, game ) {
+    getScore: function( game ) {
          
-         if( gameOver ){
-            if( game.player.turn ) {
-                 return 10;
-            } else {
-                 return -10;
-            }
+         if( game.gameWin( game.gameBoard, player.icon ) ) {
+             return -10;
+         } else if( game.gameWin( game.gameBoard, computer.icon ) ){
+             return 10;
          } else {
              return 0;
          }
           
+    },
+    gameWin: function( board, player ){
+        if( gameState.checkHorizontally( board, player )  
+            || gameState.checkDiagonally( board, player ) 
+            || gameState.checkVertically( board, player ) 
+          ) {
+            return true;
+          } else {
+            return false;
+          }
     },
     initializeGameState: function() {
          var           row = 0,
@@ -128,7 +156,7 @@ gameState = {
              column = 0;
          }
          
-         this.gameBoardState = boardState;
+         this.gameBoard = boardState;
     }, 
     
 }
@@ -185,13 +213,15 @@ window.onload = function(){
   }
 
   function setUpGameBoard() {
-    context.clearRect( 0, 0, width, height );
     drawBoard();
-    gameState.initializeGameState();
-    
   }
   
   function drawBoard() {
+     
+     context.clearRect( 0, 0, width, height );
+     
+     var column = 0,
+                 row = 0;
      
      context.beginPath();
      context.moveTo( width/3, 0 );
@@ -208,8 +238,22 @@ window.onload = function(){
      
      context.stroke();
      
-    var msg = new SpeechSynthesisUtterance( "Setting up game board. \n\n Good luck!" );
-    window.speechSynthesis.speak(msg);    
+     for ( row; row < 3; row++ ){
+         for ( column; column < 3; column++ ){
+              if( game.gameBoard[row][column] === "x" ) {
+                   // console.log( "drawing x" );
+                   drawSymbol( "x", column, row );
+                   
+              } else if( game.gameBoard[row][column] === "o" ){
+                   // console.log( "drawing o" );
+                   drawSymbol( "o", column, row )
+              }
+         }
+         column = 0;
+     }
+     
+    // var msg = new SpeechSynthesisUtterance( "Setting up game board. \n\n Good luck!" );
+    // window.speechSynthesis.speak(msg);    
   }
   
   function Circle( x, y, radius ) {
@@ -221,32 +265,33 @@ window.onload = function(){
   }
   
   Circle.prototype.draw = function() {
-     
-     if( this.x < 100 ){
-          this.x = 50;
-       } else if( this.x < 200 ){
-          this.x = 150;
-       } else if( this.x < 300 ){
-         this.x = 250;
+       var x;
+       var y;
+       
+       if( this.x === 0 ){
+          x = 50;
+       } else if( this.x === 1 ){
+          x = 150;
+       } else if( this.x === 2 ){
+         x = 250;
        }
        
-       if( this.y < 100 ){
-          this.y = 50;
-       } else if( this.y < 200 ){
-          this.y = 150;
-       } else if( this.y < 300 ){
-          this.y = 250;
+       if( this.y === 0 ){
+          y = 50;
+       } else if( this.y === 1 ){
+          y = 150;
+       } else if( this.y === 2 ){
+         y = 250;
        }
-     
-     context.lineWidth = this.lineWidth;
-     context.fillStyle = this.color;
+
      context.beginPath();
-     context.arc( this.x, this.y, this.radius, 0, Math.PI * 2, false );
+     context.arc( x, y, this.radius, 0, Math.PI * 2, false );
      context.closePath();
      context.stroke();
+
   }
   
-  function X(x,y){
+  function X( x, y ){
      this.width = this.height = 100 * .9;
      this.x = 0 || x;
      this.y = 0 || y;
@@ -255,28 +300,27 @@ window.onload = function(){
   }
   
   X.prototype.draw = function(){
-       
-       context.fillStyle = this.color;
-       context.lineWidth = this.lineWidth;
        var x;
        var y;
-      
-       if( this.x < 100 ){
+       
+       if( this.x === 0 ){
           x = 0;
-       } else if( this.x < 200 ){
+       } else if( this.x === 1 ){
           x = 100;
-       } else if( this.x < 300 ){
+       } else if( this.x === 2 ){
          x = 200;
        }
        
-       if( this.y < 100 ){
+       if( this.y === 0 ){
           y = 0;
-       } else if( this.y < 200 ){
+       } else if( this.y === 1 ){
           y = 100;
-       } else if( this.y < 300 ){
+       } else if( this.y === 2 ){
          y = 200;
        }
        
+       context.lineWidth = this.lineWidth;
+       context.fillStyle = this.color;
        context.save();
        context.beginPath();
        
@@ -329,19 +373,41 @@ window.onload = function(){
   }
   
   function handleSceneTwo( x, y ) {
+       var computerChoice;
+       console.log( "clicking..." );
+       console.log( "Is player turn : " + game.player.turn );
        
-       if( !gameState.isGameOver( gameState.gameBoardState ) ){
-            if( gameState.player.turn ){                
-                drawSymbol( player.icon, x, y );
-                updateGameBoard( player.icon, x, y );
-                gameState.player.turn = !gameState.player.turn;             
-            } else {
-               console.log( "Computer turn : " + computer.turn );
-            }
+       if ( !game.isGameOver( game ) ) {
+           if( game.player.turn ) {
+               updateGameState( player.icon, x, y );
+               console.log( "Game board" + JSON.stringify( game.gameBoard ) );
+               drawBoard();
+               
+               if( !game.isGameOver( game ) ){
+                    game.player.turn = !game.player.turn;
+                    computerChoice = minimax( game );
+                    console.log( "Choice: " + game.choice );
+                    console.log( "Computer move: " + JSON.stringify( computerChoice ) );
+                    console.log( "Is player turn : " + game.player.turn );
+                    updateGameState( computer.icon, game.choice.column, game.choice.row );
+                    drawBoard();
+                    game.player.turn = !game.player.turn;
+               } else {
+                    console.log( "game over" );
+                    drawGameOver();
+                    currentScene = 3;
+               }
+               
+           } else {
+               computerChoice = minimax( game );
+               game.player.turn = !game.player.turn;
+           }
        } else {
-            drawGameOver();
-            currentScene = 3;
-       }      
+           console.log( "game over" );
+           drawGameOver();
+           currentScene = 3;
+       }
+           
   }
   
   function handleSceneThree() {
@@ -378,35 +444,38 @@ window.onload = function(){
        context.fillText( text, ( width/2 ) - textDimensions.width / 2, height/2 );
        context.closePath(); 
        
-       player.info = true;       
   }
   
   function drawPlayerChoice( player ) {
        setTimeout( function() { drawPlayerDecision(); }.bind( this ), 500 );
   }
   
-  function updateGameBoard( icon, x, y ) {
+  function updateGameState( icon, x, y ) {
       
-       if( x <= 100 && y <= 100 ){
-          gameState.gameBoardState[0][0] = icon;
-       } else if( x <= 200 && y <= 100) {
-          gameState.gameBoardState[0][1] = icon;
-       } else if( x <= 300 && y <= 100 ){
-          gameState.gameBoardState[0][2] = icon;
-       } else if( x <= 100 && y <= 200 ){
-          gameState.gameBoardState[1][0] = icon;
-       } else if( x <= 200 && y <= 200 ){
-          gameState.gameBoardState[1][1] = icon;
-       } else if( x <= 300 && y <= 200 ){
-          gameState.gameBoardState[1][2] = icon;
-       } else if( x <=100 && y <= 300 ){
-          gameState.gameBoardState[2][0] = icon;
-       } else if( x < 200 && y <= 300 ) {
-          gameState.gameBoardState[2][1] = icon;
-       } else if( x < 300 && y <= 300 ){
-          gameState.gameBoardState[2][2] = icon;
+       if( game.player.turn ) {
+           if( x <= 100 && y <= 100 ){
+              game.gameBoard[0][0] = icon;
+           } else if( x <= 200 && y <= 100) {
+              game.gameBoard[0][1] = icon;
+           } else if( x <= 300 && y <= 100 ){
+               game.gameBoard[0][2] = icon;
+           } else if( x <= 100 && y <= 200 ){
+               game.gameBoard[1][0] = icon;
+           } else if( x <= 200 && y <= 200 ){
+               game.gameBoard[1][1] = icon;
+           } else if( x <= 300 && y <= 200 ){
+               game.gameBoard[1][2] = icon;
+           } else if( x <=100 && y <= 300 ){
+               game.gameBoard[2][0] = icon;
+           } else if( x < 200 && y <= 300 ) {
+               game.gameBoard[2][1] = icon;
+           } else if( x < 300 && y <= 300 ){
+              game.gameBoard[2][2] = icon;
+           }
+       } else {
+            game.gameBoard[y][x] = icon;
        }
-       
+                  
   }
   
   function drawSymbol( playerSymbol, x, y ){
@@ -418,16 +487,15 @@ window.onload = function(){
        img.draw();      
   }
   
-  function getPossibleMoves( game ) {
+  function getPossibleMoves( board ) {
        var possibleCoordinates = [],
                                     column = 0,
                                           row = 0; 
        
        for( row; row < 3; row++ ){
-            possibleCoordinates.push( [] );
             for( column; column < 3; column++ ){
-                if( game[row][column] === null ) {
-                    possibleCoordinates[row].push( { 
+                if( board[row][column] === null ) {
+                    possibleCoordinates.push( { 
                         row: row, column: column
                     })
                 }
@@ -435,62 +503,74 @@ window.onload = function(){
             column = 0;
        }
        
-       console.log( possibleCoordinates );
-       
        return possibleCoordinates;
   }
   
-  function get_new_state( game ) {
+  function get_new_state( move, game ) {
       var column = 0,
                   row = 0,
-                 icon = player.turn ? player.icon : computer.icon;
-      
-      game[move.row][move.column] = icon;
+                 icon = game.player.turn ? player.icon : computer.icon;
+           
+      game.gameBoard[move.row][move.column] = icon;
       
       return game;
      
   }
   
-  function minimax ( game ) {
-       console.log( game );
-       if( game.isGameOver( game ) ){
-            return game.getScore( game );
-       }
-       
-       var scores = [];
-       var moves = [];
-       var newBoard;
-       var nextMoves = getPossibleMoves( game.boardState );
-       nextMoves.map( function( move ) {
-           var possible_game = get_new_state( game.boardState );
-           scores.push( minimax( game.boardState ) );
-           moves.push( move );
-       });
-      console.log( nextMoves );
-      
-      if( game.player.turn ) {
-           var max_score_index = Math.max.apply( null, scores );
-           var choice = moves[max_score_index];
-           return scores[max_score_index];             
+  function maxIdx ( previousValue, currValue, currIdx, arr ) {
+    if( currValue > arr[previousValue] ) {
+        return currIdx;
+    } else {
+        return previousValue;
+    }
+  }
+  
+  function minIdx( previousValue, currValue, currIdx, arr ) {
+      if( currValue < arr[previousValue] ) {
+           return currIdx;
       } else {
-           var min_score_index = Math.min.apply( null, scores );
-           var choice = moves[min_score_index];
-           return scores[min_score_index];
+           return previousValue;
       }
   }
   
-  var game = Object.create( gameState );
-  game.initializeGameState();
-  game.boardState[0][0] = "o";
-  game.boardState[0][2] = "x";
-  game.boardState[1][0] = "x";
-  game.boardState[2][0] = "x";
-  game.boardState[2][1] = "o";
-  game.boardState[2][2] = "o";
-  
-  game.player.turn = true;
-  
-  minimax( game );
+  function minimax ( game ) {
+       
+      if( game.isGameOver( game ) ){
+           return game.getScore( game );
+      }
+       
+      var scores = [];
+      var moves = [];
+ 
+      var nextMoves = getPossibleMoves( game.gameBoard );
+      
+      nextMoves.map( function( move ) {          
+          var possible_game = get_new_state( move, game );
+          // console.log( "Possible game: " + JSON.stringify( possible_game ) );
+          possible_game.player.turn = !game.player.turn;
+          scores.push( minimax( possible_game ) );
+          moves.push( move );
+          game.gameBoard[move.row][move.column] =  null;
+          possible_game.player.turn = !game.player.turn;
+      });
+      
+      console.log( "Moves: "  + JSON.stringify( moves ) );
+      console.log( "Scores: "  + JSON.stringify( scores ) );
+      
+      if( !game.player.turn ) {
+           var max = Math.max.apply( null, scores );
+           var max_score_index = scores.reduce( maxIdx, 0 );
+           game.choice = moves[max_score_index];     
+           // console.log( game.choice );           
+           return scores[max_score_index];      
+      } else {
+           var min = Math.min.apply( null, scores );
+           var min_score_index = scores.reduce( minIdx, 0 );
+           game.choice = moves[min_score_index];       
+           // console.log( game.choice );           
+           return scores[min_score_index];
+      }
+  }
   
   function clickHandler( e ){
        
@@ -504,16 +584,19 @@ window.onload = function(){
            var isPlayerX = handleSceneOne( x, y );
            assignXandO( isPlayerX );
            drawPlayerChoice();
-           if( player ){
-              currentScene = 2;
-              setTimeout( setUpGameBoard, 3000 );              
-           }
            var isPlayerTurn = whoGoesFirst();
-           gameState.player = isPlayerTurn;
-           
-           console.log( "Player turn: " + player.turn );
-       } else if( currentScene === 2 ){
-           console.log( "Player turn: " + player.turn );
+           game.player.turn = isPlayerTurn;
+           setTimeout( setUpGameBoard, 3000 );              
+           currentScene = 2;
+           console.log( "Player turn: " + game.player.turn );
+           if ( !game.player.turn ) {
+               computerChoice = minimax( game );
+               console.log( game.choice );
+               updateGameState( computer.icon, game.choice.column, game.choice.row );
+               drawBoard();
+               game.player.turn = !game.player.turn;
+           }
+       } else if( currentScene === 2 ){           
            handleSceneTwo( x, y );
        } else if( currentScene === 3 ){
            handleSceneThree();
@@ -523,39 +606,25 @@ window.onload = function(){
   
   canvas.addEventListener( "click", clickHandler );
   
-  canvas.addEventListener( "resize", function() {
+  window.addEventListener( "resize", function() {
       console.log( "resizing canvas... " );
   });
   
+  
+  var game = Object.create( gameState );
+  game.initializeGameState();
+  
+  game.gameBoard[0][0] = "o";
+  // game.gameBoard[0][1] = "x";
+  game.gameBoard[0][2] = "x";
+  game.gameBoard[1][0] = "x";
+  game.gameBoard[2][0] = "x";
+  game.gameBoard[2][1] = "o";
+  game.gameBoard[2][2] = "o";
+  
   drawFirstScreen( context, width, height );
   
-  var game2 = Object.create( gameState );
-  // console.log( game2 );
-  game2.initializeGameState();
-  game2.gameBoardState[0][0] = "x";
-  game2.gameBoardState[1][0] = "x";
-  game2.gameBoardState[2][0] = "x";
-  // console.log( game2 );
-  // console.log( game2.gameBoardState );
-  
-  var game3 = Object.create( gameState );
-  game3.initializeGameState();
-  // console.log( game3 );
-  
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
