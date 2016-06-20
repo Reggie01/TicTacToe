@@ -144,19 +144,20 @@ function minimax( node, depth, maximizingPlayer ) {
 if ('speechSynthesis' in window) {
  // Synthesis support. Make your web apps talk!
  var msg = new SpeechSynthesisUtterance( "Let's play tic tac toe" );
- window.speechSynthesis.speak(msg);
+ //window.speechSynthesis.speak(msg);
  
  speechSynthesis.getVoices().forEach(function(voice) {
      console.log(voice.name, voice.default ? '(default)' :'');
  });
  
    var msg = new SpeechSynthesisUtterance('I see dead people!');
-   if ( speechSynthesis.getVoices() ) {
+
+   if ( speechSynthesis.getVoices().length > 0 ) {
         msg.voice = speechSynthesis.getVoices().filter(function(voice) { return voice.name == 'Google UK English Female'; })[0];
    }
   
    if( msg.voice ) {
-       speechSynthesis.speak(msg);
+      speechSynthesis.speak(msg);
    }
 
 }

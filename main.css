@@ -217,6 +217,7 @@ fa { color: #ccc; }
 ---------------------------------------*/
 #canvas {
   background-color: aqua;
+  margin-top: 100px;
 }
 
 body {

@@ -123,7 +123,7 @@ gameState = {
         
     },
     getScore: function( game ) {
-         
+         console.log( "Game: " + JSON.stringify( game ) );
          if( game.gameWin( game.gameBoard, player.icon ) ) {
              return -10;
          } else if( game.gameWin( game.gameBoard, computer.icon ) ){
@@ -211,10 +211,6 @@ window.onload = function(){
   } else {
     console.log("Your browser does not support canvas." );
   }
-
-  function setUpGameBoard() {
-    drawBoard();
-  }
   
   function drawBoard() {
      
@@ -251,9 +247,7 @@ window.onload = function(){
          }
          column = 0;
      }
-     
-    // var msg = new SpeechSynthesisUtterance( "Setting up game board. \n\n Good luck!" );
-    // window.speechSynthesis.speak(msg);    
+      
   }
   
   function Circle( x, y, radius ) {
@@ -344,31 +338,27 @@ window.onload = function(){
       }
   }
   
-  function handleSceneOne( x, y ) {
+  function handlePlayerSelection( x, y ) {
      var isPlayerX = false;
      
      if( x > checkBoxForX.x && x < checkBoxForX.x2 && y > checkBoxForX.y && y < checkBoxForX.y2 ){
          var width = checkBoxForX.x2 - checkBoxForX.x;
          var height = checkBoxForX.y2 - checkBoxForX.y;
-         context.fillRect( checkBoxForX.x, checkBoxForX.y, width, height );
-         
+         context.fillRect( checkBoxForX.x, checkBoxForX.y, width, height );         
          isPlayerX = true;
-         var msg = new SpeechSynthesisUtterance( "You chose x. \n Guess I'm o." );
-         window.speechSynthesis.speak(msg);        
+     
      } else if( x > checkBoxForO.x && x < checkBoxForO.x2 && y > checkBoxForO.y && y < checkBoxForO.y2 ) {
          var width = checkBoxForO.x2 - checkBoxForO.x;
          var height = checkBoxForO.y2 - checkBoxForO.y;
          context.fillRect( checkBoxForO.x, checkBoxForO.y, width, height );
-         
-         var msg = new SpeechSynthesisUtterance( "You chose o. \n Guess I'm x." );
-         window.speechSynthesis.speak(msg);
+
      }
      
      return isPlayerX;
      
   }
   
-  function whoGoesFirst() {
+  function randomlyChooseWhoGoesFirst() {
        return Math.random() > .5 ? true: false;
   }
   
@@ -435,7 +425,7 @@ window.onload = function(){
       
   }
   
-  function drawPlayerDecision() {
+  function drawPlayerChoice() {
        var text = "Player icon: " + player.icon;
        var textDimensions = context.measureText( "Player play as X." );
       
@@ -444,10 +434,6 @@ window.onload = function(){
        context.fillText( text, ( width/2 ) - textDimensions.width / 2, height/2 );
        context.closePath(); 
        
-  }
-  
-  function drawPlayerChoice( player ) {
-       setTimeout( function() { drawPlayerDecision(); }.bind( this ), 500 );
   }
   
   function updateGameState( icon, x, y ) {
@@ -578,22 +564,22 @@ window.onload = function(){
              canvasTop = canvas.getBoundingClientRect().top,
                               x = e.clientX - canvasLeft,
                               y = e.clientY - canvasTop,
-                         currentPlayerTurn;
+                isPlayerX;
        
        if( currentScene === 1 ){
-           var isPlayerX = handleSceneOne( x, y );
+           isPlayerX = handlePlayerSelection( x, y );
            assignXandO( isPlayerX );
            drawPlayerChoice();
-           var isPlayerTurn = whoGoesFirst();
-           game.player.turn = isPlayerTurn;
-           setTimeout( setUpGameBoard, 3000 );              
+           game.player.turn = randomlyChooseWhoGoesFirst();        
            currentScene = 2;
            console.log( "Player turn: " + game.player.turn );
-           if ( !game.player.turn ) {
+           if ( game.player.turn ) {
+               setTimeout( drawBoard, 2000 );
+           } else {
                computerChoice = minimax( game );
                console.log( game.choice );
-               updateGameState( computer.icon, game.choice.column, game.choice.row );
-               drawBoard();
+               updateGamesetTimeout( drawBoard, 2000 );State( computer.icon, game.choice.column, game.choice.row );
+               setTimeout( drawBoard, 2000 );
                game.player.turn = !game.player.turn;
            }
        } else if( currentScene === 2 ){           
@@ -618,8 +604,8 @@ window.onload = function(){
   // game.gameBoard[0][1] = "x";
   game.gameBoard[0][2] = "x";
   game.gameBoard[1][0] = "x";
-  game.gameBoard[2][0] = "x";
-  game.gameBoard[2][1] = "o";
+  // game.gameBoard[2][0] = "x";
+  // game.gameBoard[2][1] = "o";
   game.gameBoard[2][2] = "o";
   
   drawFirstScreen( context, width, height );
