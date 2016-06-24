@@ -111,19 +111,6 @@ gameState = {
         
         return count === 9 ? true: false;
     },
-    /* isGameOver: function( game ) {
-        
-        if( game.gameWin( game.gameBoard, player.icon ) ) {
-            return true;
-        } else if( game.gameWin( game.gameBoard, computer.icon ) ) {
-            return true;
-        } else if( game.draw( game.gameBoard ) ){
-           return true;
-        } else {
-           return false;
-        }
-        
-    }, */
     isGameOver: function( board ) {
         
         if( this.gameWin( board, "x" ) ) {
@@ -254,11 +241,10 @@ window.onload = function(){
      for ( row; row < 3; row++ ){
          for ( column; column < 3; column++ ){
               if( board[row][column] === "x" ) {
-                   // console.log( "drawing x" );
-                   drawSymbol( "x", column, row );
                    
+                   drawSymbol( "x", column, row );                
               } else if( board[row][column] === "o" ){
-                   // console.log( "drawing o" );
+                   
                    drawSymbol( "o", column, row )
               }
          }
@@ -383,11 +369,14 @@ window.onload = function(){
             textDimensions,
             text;
             
-      if( player.won ) {
+      if( gameState.getScore( board ) > 0 ) {
           text = "Player won!!";
           textDimensions = context.measureText( text );
-      } else if( computer.won ) {
+      } else if( gameState.getScore( board ) < 0 ) {
           text = "Computer won. :(";
+          textDimensions = context.measureText( text );
+      } else {
+          text = "Draw";
           textDimensions = context.measureText( text );
       }
       
@@ -413,7 +402,7 @@ window.onload = function(){
   function updateGameState( icon, x, y ) {
       
        if( game.player.turn ) {
-           if( x <= 100 && y <= 100 ){
+           if( x <= 100 && y <= 100 && board[0][0] === null ){
               board[0][0] = icon;
            } else if( x <= 200 && y <= 100) {
               board[0][1] = icon;
@@ -467,15 +456,15 @@ window.onload = function(){
   }
   
   function get_new_state( board, move, playerIcon ) {
-      // console.log( board );
+
       var column = 0,
                   row = 0,
                  icon = playerIcon,
      gameboard = board.slice();
            
-      gameboard[move.row][move.column] = icon;
+     gameboard[move.row][move.column] = icon;
       
-      return gameboard;
+     return gameboard;
      
   }
   
@@ -536,11 +525,9 @@ window.onload = function(){
   
     function minimax ( board, isPlayer ) {
 
-      // var player;
       var opponent = !isPlayer;
       var playerIcon = isPlayer === true ? computer.icon : player.icon;
       var gameboard = board.slice();
-//      console.log( gameboard );
       
       if( gameState.isGameOver( board ) ){
            return gameState.getScore( board );
@@ -552,19 +539,12 @@ window.onload = function(){
       var nextMoves = getPossibleMoves( gameboard );
       
       nextMoves.map( function( move ) {          
-          // var possible_game = get_new_state( move, game );
+          
           var newBoard = get_new_state( gameboard, move, playerIcon );
-          // console.log( "Possible game: " + JSON.stringify( possible_game ) );
-          // possible_game.player.turn = !game.player.turn;
           scores.push( minimax( newBoard, !isPlayer ) );
           moves.push( move );
-          // Todolist: board state
-          // newBoard[move.row][move.column] =  null;
-          // possible_game.player.turn = !game.player.turn;
+          newBoard[move.row][move.column] =  null;
       });
-      
-      //      console.log( "Moves: "  + JSON.stringify( moves ) );
-      //      console.log( "Scores: "  + JSON.stringify( scores ) );
       
       if( isPlayer ) {
            var max = Math.max.apply( null, scores );
@@ -625,9 +605,9 @@ window.onload = function(){
                updateGameState( player.icon, x, y );
                console.log( "gameState board" + JSON.stringify( board, null, 2 ) );
                drawBoard();
-               
+               gameState.player.turn = !gameState.player.turn;
                if( !gameState.isGameOver( gameboard ) ){
-                    gameState.player.turn = !gameState.player.turn;
+                    // gameState.player.turn = !gameState.player.turn;
                     computerChoice = minimax( gameboard, true );
                     console.log( "gameState board" + JSON.stringify( board, null, 2 ) );
                     console.log( "Computer move: " + JSON.stringify( gameState.choice, null, 2 ) );
