@@ -1,8 +1,6 @@
 ﻿/* Current a Work in Progress */
 
 var currentScene = 1,
-//      checkBoxForX,
-//      checkBoxForO,
       player,
       computer,
       gameState,
@@ -16,7 +14,6 @@ var currentScene = 1,
          tictactoe = new Image(),
                xicon = new Image(),
              youwin = new Image(),
-             // scene = 1,
  arrowDimensions = {x:"", y:""},
    arrowVisible = false,
              winner = false;
@@ -37,42 +34,42 @@ computer = {
 /*
 * Canvas & Canvas Dimensions
 */
-  var canvas = document.getElementById( "canvas" );
-  var width = canvas.width;
-  var height = canvas.height;
-  var board = [];
+var canvas = document.getElementById( "canvas" );
+var width = canvas.width;
+var height = canvas.height;
+var board = [];
   
-  if( canvas.getContext ){   
+if( canvas.getContext ){   
     var context = canvas.getContext( "2d" ); 
-  } else {
+} else {
     console.log("Your browser does not support canvas." );
-  }
+}
   
 /*
     Canvas Buttons
 */
 var buttons = [
-        {    
-            name: "oicon",
-            width: 150,
-          height: 40,
-                  x: 60,
-                  y: 120,
-        },{    
-            name: "xicon",
-            width: 150,
-          height: 40,
-                  x: 60,
-                  y: 160,
-        },
-        {
-           name: "restart",
-           width: 150,
-           height: 40,
-           x: 0,
-           y: 80
-        }
-    ];
+    {    
+      name: "oicon",
+       width: 150,
+      height: 40,
+              x: 60,
+              y: 120,
+    },{    
+       name: "xicon",
+        width: 150,
+      height: 40,
+              x: 60,
+              y: 160,
+    },
+    {
+      name: "restart",
+       width: 150,
+     height: 40,
+             x: 0,
+             y: 80
+    }
+];
 
 /* 
   * GameState Object
@@ -212,31 +209,7 @@ gameState = {
     }, 
     
 }
-  
-  function drawGameOver() {
-      var playAgainText = "Play again??",
-            textDimensions,
-            text;
-            
-      if( gameState.getScore( board ) > 0 ) {
-          text = "Player won!!";
-          textDimensions = context.measureText( text );
-      } else if( gameState.getScore( board ) < 0 ) {
-          text = "Computer won. :(";
-          textDimensions = context.measureText( text );
-      } else {
-          text = "Draw";
-          textDimensions = context.measureText( text );
-      }
-      
-      context.beginPath();
-      context.clearRect( 0, 0, width, height );
-      context.fillText( text, 25, height / 4 );
-      context.fillText( playAgainText, 25, height * ( 3 / 4 ) );
-      context.closePath();
-      
-  }
-   
+     
   function handleSceneOne( x, y ) {
    
        var  playerGoesFirst,
@@ -247,11 +220,11 @@ gameState = {
        assignXandO( isPlayerX );
        playerGoesFirst = randomlyChooseWhoGoesFirst();
        gameState.player.turn = playerGoesFirst;       
-       console.log( "Player turn: " + gameState.player.turn );
+       //console.log( "Player turn: " + gameState.player.turn );
        if ( !playerGoesFirst ) {
            var gameboard = gameState.initializeGameState();
            computerChoice = minimax( gameboard, true );
-           console.log( "Choice: "  + JSON.stringify( gameState.choice, null, 2) );
+           //console.log( "Choice: "  + JSON.stringify( gameState.choice, null, 2) );
            updateGameState( computer.icon, gameState.choice.column, gameState.choice.row );
            gameState.player.turn = !playerGoesFirst;
            currentScene = 2;
@@ -296,13 +269,6 @@ gameState = {
   function randomlyChooseWhoGoesFirst() {
        return Math.random() > .5 ? true: false;
   }
-  
-  /* function setupBoard() {
-       setTimeout( function() {
-           drawBoard();
-           currentScene = 2;
-       }, 500 )
-  } */
   
   function drawBoard() {
      
@@ -543,49 +509,30 @@ gameState = {
   }
   
   function handleSceneTwo( x, y ) {
-       var computerChoice;
-       console.log( "clicking..." );
-       console.log( "Is player turn : " + gameState.player.turn );
+       
+       // console.log( "clicking..." );
+       // console.log( "Is player turn : " + gameState.player.turn );
        var gameboard = board.slice();
        
-       if ( !gameState.isGameOver( gameboard ) ) {
-           if( gameState.player.turn ) {
+       if( !gameState.isGameOver( gameboard ) ){
+           if( gameState.player.turn ){
                updateGameState( player.icon, x, y );
-               console.log( "gameState board" + JSON.stringify( board, null, 2 ) );
-               drawBoard();
-               gameState.player.turn = !gameState.player.turn;
-               if( !gameState.isGameOver( gameboard ) ){
-                    // gameState.player.turn = !gameState.player.turn;
-                    computerChoice = minimax( gameboard, true );
-                    console.log( "gameState board" + JSON.stringify( board, null, 2 ) );
-                    console.log( "Computer move: " + JSON.stringify( gameState.choice, null, 2 ) );
-                    console.log( "Is player turn : " + gameState.player.turn );
-                    updateGameState( computer.icon, gameState.choice.column, gameState.choice.row );
-                    drawBoard();
-                    gameState.player.turn = !gameState.player.turn;
-               } else {
-                    console.log( "game over" );
-                    drawGameOver();
-                    currentScene = 3;
-               }
-               
-           } else {
-               computerChoice = minimax( gameboard );
-               console.log( "gameState board" + JSON.stringify( board, null, 2 ) );
-               console.log( "Computer move: " + JSON.stringify( gameState.choice, null, 2 ) );
-               updateGameState( computer.icon, gameState.choice.column, gameState.choice.row );
                gameState.player.turn = !gameState.player.turn;
            }
-       } else {
-           console.log( "game over" );
-           drawGameOver();
-           currentScene = 3;
-       } 
-           
+       }          
   }
   
-  function handleSceneThree() {
+  function handleSceneThree( x, y ) {
       console.log( "Play again? " );
+      var button = filterButton( x, y );
+        
+      if( button.length > 0 && button[0].name === "restart" ) {
+          console.log( "restart button pressed..." );
+          arrowVisible = false;
+          board = gameState.initializeGameState();
+          winner = "";
+          currentScene = 1;
+      }
   }
   
   function clickHandler( e ){
@@ -600,7 +547,7 @@ gameState = {
        } else if( currentScene === 2 ){           
            handleSceneTwo( x, y );
        } else if( currentScene === 3 ){
-           handleSceneThree();
+           handleSceneThree( x, y );
        }
        
   }
@@ -617,7 +564,7 @@ gameState = {
       } else if( currentScene === 2 ){
           drawScene2();
       } else if( currentScene === 3 ) {
-          // drawScene3();
+          drawScene3();
       }
        window.requestAnimationFrame( run )
   }
@@ -628,15 +575,61 @@ gameState = {
       context.drawImage( chooseone, 0, 80 );
       context.drawImage( oicon, 60, 120 );
       context.drawImage( xicon, 60, 160 );
-      // console.log( arrowVisible );
+
       if( arrowVisible ) {
           context.drawImage( arrow, arrowDimensions.x,  arrowDimensions.y ); 
       }
   }
   
   function drawScene2() {
-      drawBoard();
+       var gameboard = board.slice();
+       var score;
+
+       if ( gameState.isGameOver( gameboard ) ) {
+           console.log( "Game Over.." );
+           score = gameState.getScore( gameboard );
+           if( score === 10 ){
+               winner = "computer";
+           } else if( score === -10 ) {
+               winner = "player";
+           } else if( score === 0 ){
+               winner = "draw";
+           }
+           currentScene = 3;
+       } else {
+           if( !gameState.player.turn ){
+               computerChoice = minimax( gameboard, true );
+               console.log( "gameState board" + JSON.stringify( board, null, 2 ) );
+               console.log( "Computer move: " + JSON.stringify( gameState.choice, null, 2 ) );
+               updateGameState( computer.icon, gameState.choice.column, gameState.choice.row );
+               gameState.player.turn = !gameState.player.turn;
+           }          
+       }
+       
+       drawBoard();
+      
   }
+  
+  function drawScene3() {
+        
+        clear();
+        
+        context.drawImage( gameover, 0, 0 );
+        if ( winner === "player" ) {
+             context.drawImage( youwin, 0, 40 );
+        } else if ( winner === "computer" ) {
+             context.drawImage( computerwins, 0, 40 );
+        } else {
+             context.drawImage( draw, 0, 40 );
+        }
+        
+        context.drawImage( restart, 40, 80 );
+        
+        if( arrowVisible ) {
+           context.drawImage( arrow, arrowDimensions.x, arrowDimensions.y ); 
+        }
+                
+    }
   
   function clear() {
       context.fillStyle = "#fff";
