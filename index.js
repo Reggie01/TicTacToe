@@ -1,11 +1,25 @@
 ﻿/* Current a Work in Progress */
 
-var currentScene,
-      checkBoxForX,
-      checkBoxForO,
+var currentScene = 1,
+//      checkBoxForX,
+//      checkBoxForO,
       player,
       computer,
-      gameState;
+      gameState,
+      chooseone = new Image(),
+              arrow = new Image(),
+ computerwins = new Image(),
+                draw = new Image(),
+       gameover = new Image(),
+              oicon = new Image(),
+       restart = new Image(),
+         tictactoe = new Image(),
+               xicon = new Image(),
+             youwin = new Image(),
+             // scene = 1,
+ arrowDimensions = {x:"", y:""},
+   arrowVisible = false,
+             winner = false;
 
 /*
  * Player Object
@@ -21,9 +35,44 @@ computer = {
 };
 
 /*
-* Gameboard object
+* Canvas & Canvas Dimensions
 */
-
+  var canvas = document.getElementById( "canvas" );
+  var width = canvas.width;
+  var height = canvas.height;
+  var board = [];
+  
+  if( canvas.getContext ){   
+    var context = canvas.getContext( "2d" ); 
+  } else {
+    console.log("Your browser does not support canvas." );
+  }
+  
+/*
+    Canvas Buttons
+*/
+var buttons = [
+        {    
+            name: "oicon",
+            width: 150,
+          height: 40,
+                  x: 60,
+                  y: 120,
+        },{    
+            name: "xicon",
+            width: 150,
+          height: 40,
+                  x: 60,
+                  y: 160,
+        },
+        {
+           name: "restart",
+           width: 150,
+           height: 40,
+           x: 0,
+           y: 80
+        }
+    ];
 
 /* 
   * GameState Object
@@ -163,58 +212,97 @@ gameState = {
     }, 
     
 }
-      
-/*
-    Draw First Screen
-    parameters
-      context - canvas context
-      width - canvas width
-      height - canvas height
-*/
-
-function drawFirstScreen( context, width, height ){
-    
-    var text = context.measureText( "Player play as X." );
-    var text2 = context.measureText( "Player play as O." );
-    
-    currentScene = 1;
-    context.font = "24px serif";
-
-    context.beginPath();
-    context.fillText( "Player play as X.", ( width/2 ) - text.width, height/3 );
-    context.strokeRect( ( width / 2 ) + text.width/ .8, ( height/3 ) - 30, 30, 30 );
-    context.fillText( "Player play as O.", ( width/2 ) - text2.width, height * 2/3 );
-    context.strokeRect( ( width/2 ) + text2.width/ .8, ( height * 2/3 ) - 30, 30, 30 );
-    context.closePath();
-    
-    checkBoxForX = { x: ( width / 2 ) + text.width/ 0.8, 
-                                   x2: (( width / 2 ) + text.width/ 0.8) + 30,
-                                   y: ( ( height/3 ) - 30 ),
-                                   y2: ( ( height/3 ) - 30 ) + 30
-                                   };
-                                   
-    checkBoxForO = { x: ( width / 2 ) + text2.width/ 0.8, 
-                                   x2: (( width / 2 ) + text2.width/ 0.8 ) + 30,
-                                   y: ( ( height * 2/3 ) - 30 ),
-                                   y2: ( ( height * 2/3 ) - 30 ) + 30
-                                   };   
-                                
-}
-
-/*
-    Create a tic tac board
-*/
-window.onload = function(){
-  var canvas = document.getElementById( "canvas" );
-  var width = canvas.width;
-  var height = canvas.height;
-  var board = [];
   
-  if( canvas.getContext ){   
-    var context = canvas.getContext( "2d" ); 
-  } else {
-    console.log("Your browser does not support canvas." );
+  function drawGameOver() {
+      var playAgainText = "Play again??",
+            textDimensions,
+            text;
+            
+      if( gameState.getScore( board ) > 0 ) {
+          text = "Player won!!";
+          textDimensions = context.measureText( text );
+      } else if( gameState.getScore( board ) < 0 ) {
+          text = "Computer won. :(";
+          textDimensions = context.measureText( text );
+      } else {
+          text = "Draw";
+          textDimensions = context.measureText( text );
+      }
+      
+      context.beginPath();
+      context.clearRect( 0, 0, width, height );
+      context.fillText( text, 25, height / 4 );
+      context.fillText( playAgainText, 25, height * ( 3 / 4 ) );
+      context.closePath();
+      
   }
+   
+  function handleSceneOne( x, y ) {
+   
+       var  playerGoesFirst,
+              isPlayerX,
+              button = filterButton( x, y );
+       
+       isPlayerX = handlePlayerSelection( button );
+       assignXandO( isPlayerX );
+       playerGoesFirst = randomlyChooseWhoGoesFirst();
+       gameState.player.turn = playerGoesFirst;       
+       console.log( "Player turn: " + gameState.player.turn );
+       if ( !playerGoesFirst ) {
+           var gameboard = gameState.initializeGameState();
+           computerChoice = minimax( gameboard, true );
+           console.log( "Choice: "  + JSON.stringify( gameState.choice, null, 2) );
+           updateGameState( computer.icon, gameState.choice.column, gameState.choice.row );
+           gameState.player.turn = !playerGoesFirst;
+           currentScene = 2;
+       }
+       currentScene = 2;
+  }
+  
+  function filterButton( mouseX, mouseY ) {
+        var button = buttons.filter( function( button ) {
+             if( mouseX >=  button.x &&
+                 mouseX <= ( button.x + button.width ) &&
+                 mouseY >= button.y &&
+                 mouseY <= button.y + button.height) {
+                      return button;
+                 }
+        });
+        
+        return button;
+  }
+  
+  function handlePlayerSelection( button ) {
+     var isPlayerX = false;
+     
+     if( button.length > 0 && button[0].name === "xicon" ){
+         isPlayerX = true;
+     }
+     
+     return isPlayerX;
+     
+  }
+  
+  function assignXandO( isPlayerX ) {
+      if( isPlayerX ){
+           player.icon = "x";
+           computer.icon = "o";
+      } else {
+           player.icon = "o";
+           computer.icon = "x";
+      }
+  }
+  
+  function randomlyChooseWhoGoesFirst() {
+       return Math.random() > .5 ? true: false;
+  }
+  
+  /* function setupBoard() {
+       setTimeout( function() {
+           drawBoard();
+           currentScene = 2;
+       }, 500 )
+  } */
   
   function drawBoard() {
      
@@ -253,39 +341,13 @@ window.onload = function(){
       
   }
   
-  function Circle( x, y, radius ) {
-    this.x = 0 || x;
-    this.y = 0 || y;
-    this.radius = 30 || radius;
-    this.lineWidth = 1;
-    this.color = "blue";
-  }
-  
-  Circle.prototype.draw = function() {
-       var x;
-       var y;
-       
-       if( this.x === 0 ){
-          x = 50;
-       } else if( this.x === 1 ){
-          x = 150;
-       } else if( this.x === 2 ){
-         x = 250;
+  function drawSymbol( playerSymbol, x, y ){
+       if ( playerSymbol === "x" ){
+            var img = new X( x, y );
+       } else if( playerSymbol === "o" ){
+            var img = new Circle( x, y );
        }
-       
-       if( this.y === 0 ){
-          y = 50;
-       } else if( this.y === 1 ){
-          y = 150;
-       } else if( this.y === 2 ){
-         y = 250;
-       }
-
-     context.beginPath();
-     context.arc( x, y, this.radius, 0, Math.PI * 2, false );
-     context.closePath();
-     context.stroke();
-
+       img.draw();      
   }
   
   function X( x, y ){
@@ -331,109 +393,77 @@ window.onload = function(){
          
   }
   
-  function assignXandO( isPlayerX ) {
-      if( isPlayerX ){
-           player.icon = "x";
-           computer.icon = "o";
-      } else {
-           player.icon = "o";
-           computer.icon = "x";
-      }
+  function Circle( x, y, radius ) {
+    this.x = 0 || x;
+    this.y = 0 || y;
+    this.radius = 30 || radius;
+    this.lineWidth = 1;
+    this.color = "blue";
   }
   
-  function handlePlayerSelection( x, y ) {
-     var isPlayerX = false;
-     
-     if( x > checkBoxForX.x && x < checkBoxForX.x2 && y > checkBoxForX.y && y < checkBoxForX.y2 ){
-         var width = checkBoxForX.x2 - checkBoxForX.x;
-         var height = checkBoxForX.y2 - checkBoxForX.y;
-         context.fillRect( checkBoxForX.x, checkBoxForX.y, width, height );         
-         isPlayerX = true;
-     
-     } else if( x > checkBoxForO.x && x < checkBoxForO.x2 && y > checkBoxForO.y && y < checkBoxForO.y2 ) {
-         var width = checkBoxForO.x2 - checkBoxForO.x;
-         var height = checkBoxForO.y2 - checkBoxForO.y;
-         context.fillRect( checkBoxForO.x, checkBoxForO.y, width, height );
-     }
-     
-     return isPlayerX;
-     
-  }
-  
-  function randomlyChooseWhoGoesFirst() {
-       return Math.random() > .5 ? true: false;
-  }
-    
-  function drawGameOver() {
-      var playAgainText = "Play again??",
-            textDimensions,
-            text;
-            
-      if( gameState.getScore( board ) > 0 ) {
-          text = "Player won!!";
-          textDimensions = context.measureText( text );
-      } else if( gameState.getScore( board ) < 0 ) {
-          text = "Computer won. :(";
-          textDimensions = context.measureText( text );
-      } else {
-          text = "Draw";
-          textDimensions = context.measureText( text );
-      }
-      
-      context.beginPath();
-      context.clearRect( 0, 0, width, height );
-      context.fillText( text, 25, height / 4 );
-      context.fillText( playAgainText, 25, height * ( 3 / 4 ) );
-      context.closePath();
-      
-  }
-  
-  function drawPlayerChoice() {
-       var text = "Player icon: " + player.icon;
-       var textDimensions = context.measureText( "Player play as X." );
-      
-       context.clearRect( 0, 0, width, height );
-       context.beginPath();
-       context.fillText( text, ( width/2 ) - textDimensions.width / 2, height/2 );
-       context.closePath(); 
+  Circle.prototype.draw = function() {
+       var x;
+       var y;
        
+       if( this.x === 0 ){
+          x = 50;
+       } else if( this.x === 1 ){
+          x = 150;
+       } else if( this.x === 2 ){
+         x = 250;
+       }
+       
+       if( this.y === 0 ){
+          y = 50;
+       } else if( this.y === 1 ){
+          y = 150;
+       } else if( this.y === 2 ){
+         y = 250;
+       }
+
+     context.beginPath();
+     context.arc( x, y, this.radius, 0, Math.PI * 2, false );
+     context.closePath();
+     context.stroke();
+
   }
   
-  function updateGameState( icon, x, y ) {
+  function minimax ( board, isPlayer ) {
+
+      var opponent = !isPlayer;
+      var playerIcon = isPlayer === true ? computer.icon : player.icon;
+      var gameboard = board.slice();
       
-       if( game.player.turn ) {
-           if( x <= 100 && y <= 100 && board[0][0] === null ){
-              board[0][0] = icon;
-           } else if( x <= 200 && y <= 100) {
-              board[0][1] = icon;
-           } else if( x <= 300 && y <= 100 ){
-               board[0][2] = icon;
-           } else if( x <= 100 && y <= 200 ){
-               board[1][0] = icon;
-           } else if( x <= 200 && y <= 200 ){
-               board[1][1] = icon;
-           } else if( x <= 300 && y <= 200 ){
-               board[1][2] = icon;
-           } else if( x <=100 && y <= 300 ){
-               board[2][0] = icon;
-           } else if( x < 200 && y <= 300 ) {
-               board[2][1] = icon;
-           } else if( x < 300 && y <= 300 ){
-              board[2][2] = icon;
-           }
-       } else {
-            board[y][x] = icon;
-       }
-                  
-  }
-  
-  function drawSymbol( playerSymbol, x, y ){
-       if ( playerSymbol === "x" ){
-            var img = new X( x, y );
-       } else if( playerSymbol === "o" ){
-            var img = new Circle( x, y );
-       }
-       img.draw();      
+      if( gameState.isGameOver( board ) ){
+           return gameState.getScore( board );
+      }
+       
+      var scores = [];
+      var moves = [];
+ 
+      var nextMoves = getPossibleMoves( gameboard );
+      
+      nextMoves.map( function( move ) {          
+          
+          var newBoard = get_new_state( gameboard, move, playerIcon );
+          scores.push( minimax( newBoard, !isPlayer ) );
+          moves.push( move );
+          newBoard[move.row][move.column] =  null;
+      });
+      
+      if( isPlayer ) {
+           var max = Math.max.apply( null, scores );
+           var max_score_index = scores.reduce( maxIdx, 0 );
+           gameState.choice = moves[max_score_index];     
+           // console.log( game.choice );           
+           return scores[max_score_index];      
+      } else {
+           var min = Math.min.apply( null, scores );
+           var min_score_index = scores.reduce( minIdx, 0 );
+           gameState.choice = moves[min_score_index];       
+           // console.log( game.choice );           
+           return scores[min_score_index];
+      }
   }
   
   function getPossibleMoves( board ) {
@@ -484,114 +514,32 @@ window.onload = function(){
       }
   }
   
-/*   function minimax ( game ) {
-       
-      if( game.isGameOver( game ) ){
-           return game.getScore( game );
-      }
-       
-      var scores = [];
-      var moves = [];
- 
-      var nextMoves = getPossibleMoves( game.gameBoard );
+  function updateGameState( icon, x, y ) {
       
-      nextMoves.map( function( move ) {          
-          var possible_game = get_new_state( move, game );
-          // console.log( "Possible game: " + JSON.stringify( possible_game ) );
-          possible_game.player.turn = !game.player.turn;
-          scores.push( minimax( possible_game ) );
-          moves.push( move );
-          game.gameBoard[move.row][move.column] =  null;
-          possible_game.player.turn = !game.player.turn;
-      });
-      
-//      console.log( "Moves: "  + JSON.stringify( moves ) );
-//      console.log( "Scores: "  + JSON.stringify( scores ) );
-      
-      if( !game.player.turn ) {
-           var max = Math.max.apply( null, scores );
-           var max_score_index = scores.reduce( maxIdx, 0 );
-           game.choice = moves[max_score_index];     
-           // console.log( game.choice );           
-           return scores[max_score_index];      
-      } else {
-           var min = Math.min.apply( null, scores );
-           var min_score_index = scores.reduce( minIdx, 0 );
-           game.choice = moves[min_score_index];       
-           // console.log( game.choice );           
-           return scores[min_score_index];
-      }
-  } */
-  
-    function minimax ( board, isPlayer ) {
-
-      var opponent = !isPlayer;
-      var playerIcon = isPlayer === true ? computer.icon : player.icon;
-      var gameboard = board.slice();
-      
-      if( gameState.isGameOver( board ) ){
-           return gameState.getScore( board );
-      }
-       
-      var scores = [];
-      var moves = [];
- 
-      var nextMoves = getPossibleMoves( gameboard );
-      
-      nextMoves.map( function( move ) {          
-          
-          var newBoard = get_new_state( gameboard, move, playerIcon );
-          scores.push( minimax( newBoard, !isPlayer ) );
-          moves.push( move );
-          newBoard[move.row][move.column] =  null;
-      });
-      
-      if( isPlayer ) {
-           var max = Math.max.apply( null, scores );
-           var max_score_index = scores.reduce( maxIdx, 0 );
-           gameState.choice = moves[max_score_index];     
-           // console.log( game.choice );           
-           return scores[max_score_index];      
-      } else {
-           var min = Math.min.apply( null, scores );
-           var min_score_index = scores.reduce( minIdx, 0 );
-           gameState.choice = moves[min_score_index];       
-           // console.log( game.choice );           
-           return scores[min_score_index];
-      }
-    }
-  
-  function setupBoard() {
-       setTimeout( function() {
-           drawBoard();
-           currentScene = 2;
-       }, 500 )
-  }
-  
-  function handleSceneOne( x, y ) {
-   
-       console.log( board );
-       var  playerGoesFirst,
-              isPlayerX;
-       
-       isPlayerX = handlePlayerSelection( x, y );
-       assignXandO( isPlayerX );
-       drawPlayerChoice();
-       playerGoesFirst = randomlyChooseWhoGoesFirst();
-       gameState.player.turn = playerGoesFirst;       
-       console.log( "Player turn: " + gameState.player.turn );
-       if ( playerGoesFirst ) {
-           setupBoard();
+       if( game.player.turn ) {
+           if( x <= 100 && y <= 100 && board[0][0] === null ){
+              board[0][0] = icon;
+           } else if( x <= 200 && y <= 100 && board[0][1] === null) {
+              board[0][1] = icon;
+           } else if( x <= 300 && y <= 100 && board[0][2] === null ){
+               board[0][2] = icon;
+           } else if( x <= 100 && y <= 200 && board[1][0] === null){
+               board[1][0] = icon;
+           } else if( x <= 200 && y <= 200 && board[1][1] === null ){
+               board[1][1] = icon;
+           } else if( x <= 300 && y <= 200 && board[1][2] === null ){
+               board[1][2] = icon;
+           } else if( x <=100 && y <= 300 && board[2][0] === null ){
+               board[2][0] = icon;
+           } else if( x < 200 && y <= 300 && board[2][1] === null ) {
+               board[2][1] = icon;
+           } else if( x < 300 && y <= 300 && board[2][2] === null ){
+              board[2][2] = icon;
+           }
        } else {
-           console.log( board );
-           var gameboard = gameState.initializeGameState();
-           computerChoice = minimax( gameboard, true );
-           console.log( "Choice: "  + JSON.stringify( gameState.choice, null, 2) );
-           updateGameState( computer.icon, gameState.choice.column, gameState.choice.row );
-           setupBoard();
-           gameState.player.turn = !playerGoesFirst;
+            board[y][x] = icon;
        }
-       
+                  
   }
   
   function handleSceneTwo( x, y ) {
@@ -645,8 +593,7 @@ window.onload = function(){
        var canvasLeft = canvas.getBoundingClientRect().left,
              canvasTop = canvas.getBoundingClientRect().top,
                               x = e.clientX - canvasLeft,
-                              y = e.clientY - canvasTop,
-                isPlayerX;
+                              y = e.clientY - canvasTop;
        
        if( currentScene === 1 ){
           handleSceneOne( x, y ); 
@@ -665,21 +612,37 @@ window.onload = function(){
   });
   
   function run() {
-       /* if( game.isGameOver( game ) ) {
-           console.log( "game over" );
-       } */
-       if( currentScene === 2 ) {
-           // drawBoard();
-           // console.log( game.isGameOver( game ) );
-           console.log( "drawing board" );
-       }
+      if( currentScene === 1 ){
+          drawScene1();
+      } else if( currentScene === 2 ){
+          drawScene2();
+      } else if( currentScene === 3 ) {
+          // drawScene3();
+      }
        window.requestAnimationFrame( run )
   }
   
+  function drawScene1() {
+      clear();
+      context.drawImage( tictactoe, 0, 0 );
+      context.drawImage( chooseone, 0, 80 );
+      context.drawImage( oicon, 60, 120 );
+      context.drawImage( xicon, 60, 160 );
+      // console.log( arrowVisible );
+      if( arrowVisible ) {
+          context.drawImage( arrow, arrowDimensions.x,  arrowDimensions.y ); 
+      }
+  }
   
-  var game = Object.create( gameState );
-  var board = gameState.initializeGameState();
+  function drawScene2() {
+      drawBoard();
+  }
   
+  function clear() {
+      context.fillStyle = "#fff";
+      context.fillRect( 0, 0, width, height );
+    }
+   
   /* board[0][0] = "o";
   board[0][1] = "x";
   board[0][2] = "x";
@@ -689,11 +652,109 @@ window.onload = function(){
   board[2][2] = "o"; */
   
   console.log( board );
-  drawFirstScreen( context, width, height );
-// run();
   
+  function init() {
+       loadImages();  
+  }
   
+  function loadImages() {
+        tictactoe.src = "Images/tictactoe.png";
+        tictactoe.onload = function() {
+            context.drawImage( tictactoe, 0, 0 );
+        }
+        chooseone.src = "Images/chooseone.png";
+        chooseone.onload = function() {
+            context.drawImage( chooseone, 0, 80 );
+        }
+        oicon.src = "Images/oicon.png";
+        oicon.onload = function() {
+            context.drawImage( oicon, 60, 120 );
+        }
+        xicon.src = "Images/xicon.png";
+        xicon.onload = function() {
+            context.drawImage( xicon, 60, 160 );
+        }
+        arrow.src = "Images/arrow.png";
+        computerwins.src = "Images/computerwins.png";
+        youwin.src = "Images/youwin.png";
+        draw.src = "Images/draw.png";
+        gameover.src = "Images/gameover.png";
+        restart.src = "Images/playagain.png";
+        
+  }
+  
+  var game = Object.create( gameState );
+  var board = gameState.initializeGameState();
+  
+  init();
+  run();
+  
+  canvas.addEventListener( "mousemove", handleMouseMove );
+  
+  function handleMouseMove( event ) {
+        var mouseX, mouseY;
+        
+        if( event.pageX || event.pageY === 0 ){
+             mouseX = event.pageX - this.offsetLeft;
+             mouseY = event.pageY - this.offsetTop;
+        } else if( event.offsetX || event.offsetY === 0 ) {
+             mouseX = event.offsetX;
+             mouseY = event.offsetY;
+        }
+        
+        if( currentScene === 1 ) {
+            handleMouseMoveScene1( mouseX, mouseY );
+        } else if( currentScene === 3 ) {
+            handleMouseMoveScene3( mouseX, mouseY );
+        }
+        
+  }
+  
+   function handleMouseMoveScene1( mouseX, mouseY ) {
+         var button = filterButton( mouseX, mouseY );
+         
+         if( button.length > 0 ) {
+            if( button[0].name === "oicon" ) {
+                setArrowDimensions( 0, 130 );
+                // console.log( "oicon button" );
+            } else if( button[0].name === "xicon" ){
+                setArrowDimensions( 0, 170 );
+                // console.log( "xicon button" );
+            }  else {
+                arrowVisible = false; 
+            }
+         } else {
+            arrowVisible = false;
+         }
+         
+         // console.log( "Mouse X: " + mouseX );
+         // console.log( "Mouse Y: " + mouseY ); 
+    }
+  
+function setArrowDimensions( mouseX, mouseY ) {
+    arrowVisible = true;
+    arrowDimensions.x = mouseX;
+    arrowDimensions.y = mouseY;
 }
+  
+function handleMouseMoveScene3( mouseX, mouseY ) {
+         
+    var button = filterButton( mouseX, mouseY );
+         
+    if( button.length > 0 ) {
+        if( button[0].name === "restart" ){
+            setArrowDimensions( 0, 90 );
+            console.log( "restart button" );
+        } else {
+            arrowVisible = false;
+        }
+    } else {
+        arrowVisible = false;
+    }
+         
+}
+  
+
 
 
 
